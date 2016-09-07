@@ -37,7 +37,7 @@ apt-get install mongodb-org -y > /dev/null 2>&1
 
 # stop or kill any running mongod post-install if applicable
 echo "Stop any potential mongod post-install"
-service stop mongod
+service mongod stop
 sleep 2
 
 # create a directory for the db to live
