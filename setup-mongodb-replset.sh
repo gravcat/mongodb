@@ -11,42 +11,50 @@ replicationSetName=rs-savino
 logPath=/root/$HOSTNAME
 
 # prompt user (config management please?)
-echo "Have you prepared $node1 and $node2?"
-read ready
-if [ "$ready" = "y"]; then
-	printf "Okay, let's begin"
-else
-	exit 1
+if [ "HOSTNAME" = $node1 ]; then
+	echo "Have you prepared $node1 and $node2?"
+	read ready
+	if [ "$ready" = "y"]; then
+		printf "Okay, let's begin"
+	else
+		exit 1
+	fi
 fi
  
 # update the system if necessary, get new packages lists
-apt-get update -y
+echo "Updating the system and packages lists"
+apt-get update -y > /dev/null 2>&1
 
 # install the key responsible for signing the mongodb packages and load repository into sources.list.d for apt
-apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+echo "Installing mongodb package repository key and installing repository to our sources file"
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 > /dev/null 2>&1
 echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
 
 # update once more to get mongodb packages list, install mongodb (and dep packages)
-apt-get update -y
-apt-get install mongodb-org -y
+echo "Installing mongodb-org and dependencies"
+apt-get update -y > /dev/null 2>&1
+apt-get install mongodb-org -y > /dev/null 2>&1
 
 # stop or kill any running mongod post-install if applicable
+echo "Stop any potential mongod post-install"
 service stop mongod
 sleep 2
-pkill mongo
 
 # create a directory for the db to live
+echo "Creating the directory to house the database"
 mkdir -p /data/$replicationSetName_$HOSTNAME
 
 # someone somewhere said that you don't want the bindIp directive in the config ¯\_(ツ)_/¯
 #sed -e '/bindIp/ s/^#*/#/' -i /etc/mongod.conf
 
 # start mongod, set replica set name, log path, and db path. wait for 5 before continuing
+echo "Starting up mongod!"
 mongod --replSet $replicationSetName --logpath "/root/$HOSTNAME" --dbpath /data/$replicationSetName_$HOSTNAME --fork
-sleep 5
 
 # connect to node1 and configure replica set
 if [ "$HOSTNAME" = "$node1" ]; then
+	echo "I see you are $node1, waiting 5 to ensure mongod started, then adding replicas"
+	sleep 5
 	mongo --eval "printjson(rs.add('$node2'))"
 	mongo --eval "printjson(rs.add('$node3'))"
 fi
