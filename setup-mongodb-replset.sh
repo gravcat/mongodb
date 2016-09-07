@@ -28,7 +28,9 @@ apt-get update -y > /dev/null 2>&1
 
 # remove any existing mongodb
 apt-get remove mongodb-org -y > /dev/null 2>&1
-mv /etc/mongod.conf /etc/mongod.conf-backup
+mv /etc/mongod.conf /etc/mongod.conf-backup > /dev/null 2>&1
+rm -rf /data/$replicationSetName_$HOSTNAME > /dev/null 2>&1
+
 # install the key responsible for signing the mongodb packages and load repository into sources.list.d for apt
 echo "Installing mongodb package repository key and installing repository to our sources file"
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 > /dev/null 2>&1
