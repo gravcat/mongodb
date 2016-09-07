@@ -9,22 +9,26 @@ node2=ubuntu-mongo2
 node3=ubuntu-mongo3
 replicationSetName=rs-savino
 logPath=/root/$HOSTNAME
+mongodport=27017
 
 # prompt user (config management please?)
 if [ "HOSTNAME" = $node1 ]; then
-	echo "Have you prepared $node1 and $node2?"
-	read ready
-	if [ "$ready" = "y"]; then
+	read -r -p "Have you prepared $node1 and $node2?" response
+	if response = "y"
+	then
 		printf "Okay, let's begin"
 	else
 		exit 1
 	fi
 fi
- 
+
 # update the system if necessary, get new packages lists
 echo "Updating the system and packages lists"
 apt-get update -y > /dev/null 2>&1
 
+# remove any existing mongodb
+apt-get remove mongodb-org -y > /dev/null 2>&1
+mv /etc/mongod.conf /etc/mongod.conf-backup
 # install the key responsible for signing the mongodb packages and load repository into sources.list.d for apt
 echo "Installing mongodb package repository key and installing repository to our sources file"
 apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 > /dev/null 2>&1
@@ -37,7 +41,8 @@ apt-get install mongodb-org -y > /dev/null 2>&1
 
 # stop or kill any running mongod post-install if applicable
 echo "Stop any potential mongod post-install"
-service mongod stop
+service mongod stop > /dev/null 2>&1
+pidof mongod | xargs kill > /dev/null 2>&1
 sleep 2
 
 # create a directory for the db to live
@@ -53,13 +58,7 @@ mongod --replSet $replicationSetName --logpath "/root/$HOSTNAME" --dbpath /data/
 
 # connect to node1 and configure replica set
 if [ "$HOSTNAME" = "$node1" ]; then
-	echo "I see you are $node1, waiting 5 to ensure mongod started, then adding replicas"
+	echo "$node1 detected, waiting 5 to ensure mongod started, then adding replicas"
 	sleep 5
-	mongo --eval "printjson(rs.add('$node2'))"
-	mongo --eval "printjson(rs.add('$node3'))"
+	mongo --port $mongodport init-replica-set.js
 fi
-	
-
-
-
-
