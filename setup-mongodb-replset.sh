@@ -12,12 +12,10 @@ logPath=/root/$HOSTNAME
 mongodport=27017
 
 # update the system if necessary, get new packages lists
-#echo "Updating the system and packages lists"
 
 function updateHost {
 	apt-get update -y > /dev/null 2>&1
 }
-
 
 # remove any existing mongodb
 function removeExistingInstall {
@@ -26,24 +24,19 @@ function removeExistingInstall {
 	rm -rf /data/$replicationSetName_$HOSTNAME > /dev/null 2>&1
 }
 
-
 # install the key responsible for signing the mongodb packages and load repository into sources.list.d for apt
 function aptPrep {
-	#echo "Installing mongodb package repository key and installing repository to our sources file"
 	apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927 > /dev/null 2>&1
 	echo "deb http://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list 2>&1
 }
 
 # update once more to get mongodb packages list, install mongodb (and dep packages)
-#echo "Installing mongodb-org and dependencies"
-
 function installMongo {
 	apt-get update -y > /dev/null 2>&1
 	apt-get install mongodb-org -y > /dev/null 2>&1
 }
 
 # stop or kill any running mongod post-install if applicable
-#echo "Stop any potential mongod post-install"
 function stopNewMongo {
 	service mongod stop > /dev/null 2>&1
 	pidof mongod | xargs kill > /dev/null 2>&1
@@ -51,7 +44,6 @@ function stopNewMongo {
 }
 
 # create a directory for the db to live
-#echo "Creating the directory to house the database"
 function createDatabaseDir {
 	mkdir -p /data/$replicationSetName_$HOSTNAME
 }
@@ -60,7 +52,6 @@ function createDatabaseDir {
 #sed -e '/bindIp/ s/^#*/#/' -i /etc/mongod.conf
 
 # start mongod, set replica set name, log path, and db path. wait for 5 before continuing
-#echo "Starting up mongod!"
 function startMongo {
 	mongod --replSet $replicationSetName --logpath "/root/$HOSTNAME" --dbpath /data/$replicationSetName_$HOSTNAME --fork
 }
