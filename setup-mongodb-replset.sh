@@ -11,17 +11,6 @@ replicationSetName=rs-savino
 logPath=/root/$HOSTNAME
 mongodport=27017
 
-# prompt user (config management please?)
-if [ "HOSTNAME" = $node1 ]; then
-	read -r -p "Have you prepared $node1 and $node2?" response
-	if response = "y"
-	then
-		printf "Okay, let's begin"
-	else
-		exit 1
-	fi
-fi
-
 # update the system if necessary, get new packages lists
 echo "Updating the system and packages lists"
 apt-get update -y > /dev/null 2>&1
