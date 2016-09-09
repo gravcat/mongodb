@@ -1,7 +1,7 @@
 #!/bin/bash
 # Bash script to set up a simple 3 replica set in mongodb via bash.
 # Assumes node1, node2, and node3 are hosts on the network, which you can resolve.
-# Also assumes that you have installed mongodb-org on node2 and node3 prior to running.
+# At this point in time this must be run on $node2 and $node3, prior to $node1.
 
 # vars
 node1=ubuntu-mongo1
