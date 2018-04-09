@@ -1,6 +1,6 @@
 rs.initiate(
 	{
-		_id: "rs-savino",
+		_id: "replicaset-example",
 		version: 1,
 		members: [
 			{ _id: 0, host : "ubuntu-mongo1:27017" }
